@@ -1,9 +1,13 @@
-const Design = require("../models/design");
+const Design = require("../models/Design");
 
 // Create a new design
 const createDesign = async (req, res) => {
   try {
     const { artist_id, style_id, name, image, price } = req.body;
+
+    if (!artist_id || !style_id || !name || !image || !price) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
     const newDesign = new Design({
       artist_id,
@@ -24,22 +28,25 @@ const createDesign = async (req, res) => {
 const getDesignById = async (req, res) => {
   try {
     const design = await Design.findOne({ design_id: req.params.id });
+
     if (!design) {
       return res.status(404).json({ message: "Design not found" });
     }
+
     res.json(design);
   } catch (err) {
-    res.status(500).json({ message: "Server Error", error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Search for designs with filtering and pagination
+// Search designs with filtering and pagination
 const searchDesigns = async (req, res) => {
   try {
     const { search = "", limit = 10, offset = 0 } = req.query;
+
     const filter = {
       $or: [
-        { name: { $regex: search, $options: "i" } }, // Case-insensitive search by name
+        { name: { $regex: search, $options: "i" } }, // Case-insensitive search
       ],
     };
 
@@ -49,12 +56,8 @@ const searchDesigns = async (req, res) => {
 
     res.json(designs);
   } catch (err) {
-    res.status(500).json({ message: "Server Error", error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
-module.exports = {
-  createDesign,
-  getDesignById,
-  searchDesigns,
-};
+module.exports = { createDesign, getDesignById, searchDesigns };
